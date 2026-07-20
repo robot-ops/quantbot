@@ -247,10 +247,23 @@ class TradingBotStrategy:
             "rsi": round(rsi, 2)
         }
 
+    def _mask_secret(self, val: str) -> str:
+        if not val:
+            return ""
+        if len(val) <= 8:
+            return "********"
+        return f"{val[:5]}...{val[-4:]}"
+
     def get_full_stats(self) -> Dict:
         paper_stats = self.paper_engine.get_stats(self.latest_price)
         total_equity = self.get_total_equity()
         active_pos = self.paper_engine.active_position if self.config.trading_mode == "demo" else self.live_active_position
+        
+        safe_config = self.config.dict()
+        safe_config["telegram_bot_token"] = self._mask_secret(safe_config.get("telegram_bot_token", ""))
+        safe_config["exchange_api_key"] = self._mask_secret(safe_config.get("exchange_api_key", ""))
+        safe_config["exchange_api_secret"] = self._mask_secret(safe_config.get("exchange_api_secret", ""))
+
         return {
             **paper_stats,
             "active_position": active_pos,
@@ -260,7 +273,7 @@ class TradingBotStrategy:
             "symbol": self.config.symbol,
             "timeframe": self.config.timeframe,
             "current_price": round(self.latest_price, 2),
-            "config": self.config.dict(),
+            "config": safe_config,
             "trade_history": self.paper_engine.trade_history,
             "logs": self.log_messages[:30],
             "telegram_configured": self.telegram_service.is_configured()

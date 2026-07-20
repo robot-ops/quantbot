@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send, Sliders, Key, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Send, Sliders, Key, ShieldCheck, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 
 export default function SettingsModal({ config, onClose, onSave, API_BASE }) {
   const [tab, setTab] = useState('STRATEGY'); // STRATEGY, TELEGRAM, EXCHANGE
   const [isCustomSymbol, setIsCustomSymbol] = useState(false);
+  const [showTelegramToken, setShowTelegramToken] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showApiSecret, setShowApiSecret] = useState(false);
+
   const [formData, setFormData] = useState({
     symbol: config?.symbol || 'BTC/USDT',
     timeframe: config?.timeframe || '15m',
@@ -274,7 +278,23 @@ export default function SettingsModal({ config, onClose, onSave, API_BASE }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>Telegram Bot Token</label>
-                <input name="telegram_bot_token" value={formData.telegram_bot_token} onChange={handleChange} placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" style={{ width: '100%' }} />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showTelegramToken ? 'text' : 'password'}
+                    name="telegram_bot_token"
+                    value={formData.telegram_bot_token}
+                    onChange={handleChange}
+                    placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
+                    style={{ width: '100%', paddingRight: '40px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowTelegramToken(!showTelegramToken)}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  >
+                    {showTelegramToken ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>Dapatkan token gratis dari @BotFather di Telegram</span>
               </div>
 
@@ -337,12 +357,44 @@ export default function SettingsModal({ config, onClose, onSave, API_BASE }) {
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>Exchange API Key</label>
-                <input name="exchange_api_key" value={formData.exchange_api_key} onChange={handleChange} placeholder="Masukkan API Key" style={{ width: '100%' }} />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    name="exchange_api_key"
+                    value={formData.exchange_api_key}
+                    onChange={handleChange}
+                    placeholder="Masukkan API Key"
+                    style={{ width: '100%', paddingRight: '40px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  >
+                    {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>Exchange API Secret</label>
-                <input type="password" name="exchange_api_secret" value={formData.exchange_api_secret} onChange={handleChange} placeholder="Masukkan API Secret" style={{ width: '100%' }} />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showApiSecret ? 'text' : 'password'}
+                    name="exchange_api_secret"
+                    value={formData.exchange_api_secret}
+                    onChange={handleChange}
+                    placeholder="Masukkan API Secret"
+                    style={{ width: '100%', paddingRight: '40px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiSecret(!showApiSecret)}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  >
+                    {showApiSecret ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
           )}
