@@ -6,6 +6,7 @@ export default function SettingsModal({ config, onClose, onSave, API_BASE }) {
   const [tab, setTab] = useState('STRATEGY'); // STRATEGY, TELEGRAM, EXCHANGE
   const [isCustomSymbol, setIsCustomSymbol] = useState(false);
   const [showTelegramToken, setShowTelegramToken] = useState(false);
+  const [showChatId, setShowChatId] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showApiSecret, setShowApiSecret] = useState(false);
 
@@ -300,7 +301,23 @@ export default function SettingsModal({ config, onClose, onSave, API_BASE }) {
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>Telegram Chat ID</label>
-                <input name="telegram_chat_id" value={formData.telegram_chat_id} onChange={handleChange} placeholder="987654321" style={{ width: '100%' }} />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showChatId ? 'text' : 'password'}
+                    name="telegram_chat_id"
+                    value={formData.telegram_chat_id}
+                    onChange={handleChange}
+                    placeholder="987654321"
+                    style={{ width: '100%', paddingRight: '40px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowChatId(!showChatId)}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                  >
+                    {showChatId ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>Dapatkan Chat ID Anda dari @userinfobot di Telegram</span>
               </div>
 

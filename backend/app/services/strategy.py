@@ -261,6 +261,7 @@ class TradingBotStrategy:
         
         safe_config = self.config.dict()
         safe_config["telegram_bot_token"] = self._mask_secret(safe_config.get("telegram_bot_token", ""))
+        safe_config["telegram_chat_id"] = self._mask_secret(safe_config.get("telegram_chat_id", ""))
         safe_config["exchange_api_key"] = self._mask_secret(safe_config.get("exchange_api_key", ""))
         safe_config["exchange_api_secret"] = self._mask_secret(safe_config.get("exchange_api_secret", ""))
 
