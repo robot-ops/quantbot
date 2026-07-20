@@ -35,3 +35,6 @@ Selamat datang di pusat dokumentasi terpisah untuk **QuantBot Pro (Crypto Tradin
 
 10. ☁️ **[10. Panduan Deploy Free Hosting 24/7](file:///d:/Personal/Project/trading-bot/docs/09-free-hosting-deployment.md)**
     - Panduan mengunggah bot ke hosting gratis (Vercel + Render + UptimeRobot / Oracle Free VPS) agar running 24/7 tanpa laptop.
+
+11. 🛠️ **[11. Panduan Alur Pengembangan (Development Workflow)](file:///d:/Personal/Project/trading-bot/docs/10-development-workflow.md)**
+    - Alur iterasi lokal, strategi branching Git, dan panduan penambahan fitur/indikator baru bagi developer.
