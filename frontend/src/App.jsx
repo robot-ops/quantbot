@@ -8,8 +8,12 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Terminal } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8000';
-const WS_URL = 'ws://localhost:8000/ws';
+// Dynamic API Base & WebSocket URL (Auto switch between Localhost and Cloud Render)
+const DEFAULT_CLOUD_API = 'https://quantbot-i0ab.onrender.com';
+const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
+const API_BASE = import.meta.env.VITE_API_BASE || (isLocalhost ? 'http://localhost:8000' : DEFAULT_CLOUD_API);
+const WS_URL = import.meta.env.VITE_WS_URL || (isLocalhost ? 'ws://localhost:8000/ws' : DEFAULT_CLOUD_API.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws');
 
 export default function App() {
   const [stats, setStats] = useState(null);
@@ -126,7 +130,7 @@ export default function App() {
       await axios.post(`${API_BASE}/api/control/start`);
       fetchStatus();
     } catch (e) {
-      alert('Gagal menjalankan bot. Pastikan backend Python (run.py) sudah berjalan di http://localhost:8000');
+      alert(`Gagal menjalankan bot. Pastikan backend sudah berjalan di ${API_BASE}`);
       fetchStatus();
     }
   };
@@ -249,7 +253,7 @@ export default function App() {
               ))
             ) : (
               <div style={{ color: 'var(--text-muted)' }}>
-                {stats ? 'Mencari sinyal indikator & log sistem...' : 'Menghubungkan ke Backend Engine (Pastikan python run.py sudah berjalan)...'}
+                {stats ? 'Mencari sinyal indikator & log sistem...' : 'Menghubungkan ke Backend Engine...'}
               </div>
             )}
           </div>
