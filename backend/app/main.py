@@ -65,3 +65,4 @@ async def background_trading_loop():
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(background_trading_loop())
+    asyncio.create_task(bot_instance.telegram_service.poll_updates(bot_instance))
