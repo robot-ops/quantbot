@@ -40,6 +40,10 @@ class TradingBotStrategy:
     def update_config(self, new_settings: Dict):
         for key, value in new_settings.items():
             if hasattr(self.config, key):
+                # Jangan override kredensial sensitif dengan nilai tersensor/masked (seperti 87157...GlQ atau ********) dari frontend
+                if key in ["telegram_bot_token", "telegram_chat_id", "exchange_api_key", "exchange_api_secret"]:
+                    if value and ("..." in str(value) or "*" in str(value)):
+                        continue
                 setattr(self.config, key, value)
         
         # Update sub-services
