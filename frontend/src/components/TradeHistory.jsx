@@ -48,29 +48,31 @@ export default function TradeHistory({ trades }) {
           Belum ada riwayat transaksi. Bot akan mencatat otomatis begitu order tertutup.
         </div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', textWrap: 'nowrap' }}>
+        <div className="trade-table-container">
+          <table className="trade-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--bg-card-border)', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                <th style={{ padding: '10px 12px' }}>ID & PAIR</th>
-                <th style={{ padding: '10px 12px' }}>TIPE</th>
-                <th style={{ padding: '10px 12px' }}>ENTRY PRICE</th>
-                <th style={{ padding: '10px 12px' }}>EXIT PRICE</th>
-                <th style={{ padding: '10px 12px' }}>AMOUNT</th>
-                <th style={{ padding: '10px 12px' }}>PROFIT / LOSS</th>
-                <th style={{ padding: '10px 12px' }}>REASON</th>
+              <tr className="trade-thead-tr">
+                <th className="trade-th">ID & PAIR</th>
+                <th className="trade-th">TIPE</th>
+                <th className="trade-th">ENTRY PRICE</th>
+                <th className="trade-th">EXIT PRICE</th>
+                <th className="trade-th">AMOUNT</th>
+                <th className="trade-th">PROFIT / LOSS</th>
+                <th className="trade-th">REASON</th>
               </tr>
             </thead>
             <tbody>
               {filteredTrades.map(trade => {
                 const isProfit = trade.pnl >= 0;
                 return (
-                  <tr key={trade.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)', transition: 'background 0.2s' }}>
-                    <td style={{ padding: '12px', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
-                      <div style={{ color: '#fff' }}>{trade.symbol}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{trade.id} ({trade.mode})</div>
+                  <tr key={trade.id} className="trade-tr">
+                    <td className="trade-td" data-label="ID & Pair" style={{ fontWeight: 600 }}>
+                      <div className="trade-td-pair">
+                        <div style={{ color: '#fff' }}>{trade.symbol}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{trade.id} ({trade.mode})</div>
+                      </div>
                     </td>
-                    <td style={{ padding: '12px' }}>
+                    <td className="trade-td" data-label="Tipe">
                       <span style={{ 
                         background: trade.side === 'BUY' ? 'rgba(0, 230, 118, 0.12)' : 'rgba(255, 23, 68, 0.12)',
                         color: trade.side === 'BUY' ? '#00e676' : '#ff1744',
@@ -86,13 +88,13 @@ export default function TradeHistory({ trades }) {
                         {trade.side}
                       </span>
                     </td>
-                    <td style={{ padding: '12px', fontFamily: 'var(--font-mono)' }}>${trade.entry_price.toLocaleString()}</td>
-                    <td style={{ padding: '12px', fontFamily: 'var(--font-mono)' }}>${trade.exit_price.toLocaleString()}</td>
-                    <td style={{ padding: '12px', fontFamily: 'var(--font-mono)' }}>{trade.amount}</td>
-                    <td style={{ padding: '12px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: isProfit ? '#00e676' : '#ff1744' }}>
+                    <td className="trade-td trade-td-mono" data-label="Harga Beli">${trade.entry_price.toLocaleString()}</td>
+                    <td className="trade-td trade-td-mono" data-label="Harga Jual">${trade.exit_price.toLocaleString()}</td>
+                    <td className="trade-td trade-td-mono" data-label="Jumlah">{trade.amount}</td>
+                    <td className="trade-td trade-td-mono" data-label="Profit / Loss" style={{ fontWeight: 700, color: isProfit ? '#00e676' : '#ff1744' }}>
                       {isProfit ? '+' : ''}${trade.pnl.toFixed(2)} ({isProfit ? '+' : ''}{trade.pnl_pct.toFixed(2)}%)
                     </td>
-                    <td style={{ padding: '12px' }}>
+                    <td className="trade-td" data-label="Alasan Close">
                       <span style={{ 
                         fontSize: '0.75rem', 
                         color: 'var(--text-secondary)',

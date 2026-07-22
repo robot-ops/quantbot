@@ -206,3 +206,115 @@ select option:hover, select option:focus, select option:active, select option:ch
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* ==========================================================================
+   Responsive Trade History Table & Cards
+   ========================================================================== */
+.trade-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.trade-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.trade-thead-tr {
+  border-bottom: 1px solid var(--bg-card-border);
+  text-align: left;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.trade-th {
+  padding: 12px 16px;
+  font-weight: 600;
+}
+
+.trade-tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.2s ease;
+}
+
+.trade-tr:hover {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.trade-td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.trade-td-mono {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 768px) {
+  /* Hide the headers on mobile */
+  .trade-table thead {
+    display: none;
+  }
+  
+  .trade-table, 
+  .trade-table tbody, 
+  .trade-table tr, 
+  .trade-table td {
+    display: block;
+    width: 100%;
+  }
+  
+  .trade-table-container {
+    overflow-x: visible; /* Disable scrollbar on mobile card layout */
+  }
+  
+  .trade-table tr {
+    border: 1px solid var(--bg-card-border);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .trade-table tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  
+  .trade-td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 !important;
+    font-size: 0.85rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    text-align: right;
+  }
+  
+  .trade-td:last-child {
+    border-bottom: none;
+  }
+  
+  /* Dynamic labels on mobile */
+  .trade-td::before {
+    content: attr(data-label);
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    text-align: left;
+    margin-right: 12px;
+  }
+}
+
+.trade-td-pair {
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .trade-td-pair {
+    text-align: right;
+  }
+}
