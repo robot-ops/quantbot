@@ -54,10 +54,10 @@ export default function TradeHistory({ trades }) {
               <tr className="trade-thead-tr">
                 <th className="trade-th">ID & PAIR</th>
                 <th className="trade-th">TIPE</th>
-                <th className="trade-th">ENTRY PRICE</th>
-                <th className="trade-th">EXIT PRICE</th>
+                <th className="trade-th">ENTRY</th>
+                <th className="trade-th">EXIT</th>
                 <th className="trade-th">AMOUNT</th>
-                <th className="trade-th">PROFIT / LOSS</th>
+                <th className="trade-th">PnL</th>
                 <th className="trade-th">REASON</th>
               </tr>
             </thead>
