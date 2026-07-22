@@ -9,13 +9,55 @@ class TelegramService:
         self.chat_id = chat_id
         self.state = "NORMAL"  # NORMAL, AWAITING_API_KEY, AWAITING_API_SECRET
         self.temp_api_key = None
+        if self.is_configured():
+            self.register_commands()
 
     def update_credentials(self, token: str, chat_id: str):
         self.token = token
         self.chat_id = chat_id
+        if self.is_configured():
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.run_in_executor(None, self.register_commands)
+                else:
+                    self.register_commands()
+            except Exception:
+                # Fallback run sync jika loop belum aktif
+                self.register_commands()
 
     def is_configured(self) -> bool:
         return bool(self.token and self.chat_id)
+
+    def register_commands(self) -> bool:
+        """Daftarkan daftar command resmi ke Telegram Menu Button"""
+        if not self.is_configured():
+            return False
+            
+        url = f"https://api.telegram.org/bot{self.token}/setMyCommands"
+        payload = {
+            "commands": [
+                {"command": "status", "description": "Cek status bot, harga, PnL, & posisi aktif"},
+                {"command": "summary", "description": "Laporan performa trading & win rate"},
+                {"command": "pause", "description": "Menghentikan eksekusi trading bot"},
+                {"command": "resume", "description": "Menjalankan kembali trading bot"},
+                {"command": "config", "description": "Tampilkan parameter strategi & kredensial"},
+                {"command": "set", "description": "Ubah setting (e.g. /set timeframe 5m)"},
+                {"command": "mode", "description": "Ubah mode trading (e.g. /mode live)"},
+                {"command": "help", "description": "Tampilkan bantuan & daftar perintah"}
+            ]
+        }
+        try:
+            res = requests.post(url, json=payload, timeout=5)
+            if res.status_code == 200:
+                print("[TelegramService] Registered command menu successfully.")
+                return True
+            else:
+                print(f"[TelegramService] Failed to register commands: {res.text}")
+                return False
+        except Exception as e:
+            print(f"[TelegramService] Error registering commands: {e}")
+            return False
 
     def get_default_keyboard(self) -> dict:
         return {
@@ -54,6 +96,7 @@ class TelegramService:
 
     async def poll_updates(self, bot_strategy):
         """Membaca pesan masuk dari Telegram untuk remote control secara berkala"""
+        self.register_commands()
         offset = 0
         while True:
             if not self.is_configured():
