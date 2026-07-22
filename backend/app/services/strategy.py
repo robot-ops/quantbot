@@ -46,6 +46,9 @@ class TradingBotStrategy:
                         continue
                 setattr(self.config, key, value)
         
+        # Simpan ke file settings.json agar persisten
+        self.config.save()
+        
         # Update sub-services
         self.telegram_service.update_credentials(
             self.config.telegram_bot_token,

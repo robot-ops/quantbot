@@ -55,10 +55,23 @@ class CCXTService:
 
         # Fallback data OHLCV sintetis untuk offline mode/testing
         now_ts = int(time.time() * 1000)
+        
+        # Hitung interval milidetik berdasarkan timeframe
+        tf_ms = 60 * 1000
+        try:
+            if timeframe.endswith("m"):
+                tf_ms = int(timeframe[:-1]) * 60 * 1000
+            elif timeframe.endswith("h"):
+                tf_ms = int(timeframe[:-1]) * 60 * 60 * 1000
+            elif timeframe.endswith("d"):
+                tf_ms = int(timeframe[:-1]) * 24 * 60 * 60 * 1000
+        except Exception:
+            pass
+
         candles = []
         base_price = self._mock_last_price
         for i in range(limit, 0, -1):
-            ts = now_ts - (i * 60 * 1000)
+            ts = now_ts - (i * tf_ms)
             high = base_price * (1 + random.uniform(0.0005, 0.002))
             low = base_price * (1 - random.uniform(0.0005, 0.002))
             close = random.uniform(low, high)
