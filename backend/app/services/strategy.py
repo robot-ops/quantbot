@@ -292,7 +292,8 @@ class TradingBotStrategy:
 
             # 3. Check Risk Drawdown Limits
             stats = portfolio.get_stats(current_price)
-            equity = stats["balance"] + stats["unrealized_pnl"]
+            active_cost = active_pos.cost if active_pos else 0.0
+            equity = stats["balance"] + active_cost + stats["unrealized_pnl"]
             
             drawdown_breached, dd_pct = self.risk_manager.check_daily_drawdown(
                 self.daily_starting_balance,
@@ -391,9 +392,10 @@ class TradingBotStrategy:
             portfolio = PortfolioManager(db, broker, mode=mode, initial_balance=self.daily_starting_balance)
             
             stats = portfolio.get_stats(self.latest_price)
-            total_equity = stats["balance"] + stats["unrealized_pnl"]
-
             trade_repo = TradeRepository(db)
+            active_pos = trade_repo.get_active_position(mode=mode)
+            active_cost = active_pos.cost if active_pos else 0.0
+            total_equity = stats["balance"] + active_cost + stats["unrealized_pnl"]
             all_trades = [t for t in trade_repo.get_all(mode=mode, limit=50) if t.closed_at is not None]
             
             # Map DB trades to UI JSON format

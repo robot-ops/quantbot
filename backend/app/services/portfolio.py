@@ -83,7 +83,9 @@ class PortfolioManager:
     def record_performance_snapshot(self, current_price: float):
         """Records current equity and trade stats snapshot in the performance database."""
         stats = self.get_stats(current_price)
-        total_equity = stats["balance"] + stats["unrealized_pnl"]
+        active_pos = self.trade_repo.get_active_position(mode=self.mode)
+        active_cost = active_pos.cost if active_pos else 0.0
+        total_equity = stats["balance"] + active_cost + stats["unrealized_pnl"]
         drawdown_pct = 0.0
         
         # Calculate drawdown against initial balance or historical peak
