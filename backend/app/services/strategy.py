@@ -394,7 +394,7 @@ class TradingBotStrategy:
             total_equity = stats["balance"] + stats["unrealized_pnl"]
 
             trade_repo = TradeRepository(db)
-            all_trades = trade_repo.get_all(mode=mode, limit=50)
+            all_trades = [t for t in trade_repo.get_all(mode=mode, limit=50) if t.closed_at is not None]
             
             # Map DB trades to UI JSON format
             trade_history_mapped = []
@@ -403,10 +403,10 @@ class TradingBotStrategy:
                     "id": f"PAPER-{t.id}" if mode == "DEMO" else f"LIVE-{t.id}",
                     "symbol": t.symbol,
                     "side": t.side,
-                    "entry_price": t.entry_price,
-                    "exit_price": t.exit_price,
-                    "amount": t.amount,
-                    "cost": t.cost,
+                    "entry_price": t.entry_price or 0.0,
+                    "exit_price": t.exit_price or 0.0,
+                    "amount": t.amount or 0.0,
+                    "cost": t.cost or 0.0,
                     "pnl": t.pnl or 0.0,
                     "pnl_pct": t.pnl_pct or 0.0,
                     "opened_at": t.opened_at.isoformat() if t.opened_at else None,
