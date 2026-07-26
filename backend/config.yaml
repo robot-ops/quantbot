@@ -1,0 +1,70 @@
+# QuantBot Pro Configuration
+
+# General Settings
+trading_mode: "demo"
+symbol: "BTC/USDT"
+timeframe: "15m"
+
+# Default Strategy Parameters
+ema_fast: 9
+ema_slow: 21
+rsi_period: 14
+rsi_oversold: 35.0
+rsi_overbought: 65.0
+stop_loss_pct: 1.5
+take_profit_pct: 3.0
+risk_per_trade_pct: 1.0
+max_daily_drawdown_pct: 3.0
+
+# Dynamic Risk Management Switches
+use_trailing_stop: false
+trail_pct: 1.0
+use_break_even: false
+break_even_pct: 1.5
+use_partial_close: false
+partial_close_pct: 1.5
+
+# Telegram Credentials
+telegram_bot_token: ""
+telegram_chat_id: ""
+
+# Default Exchange
+exchange_id: "tokocrypto"
+exchange_api_key: ""
+exchange_api_secret: ""
+
+# Database Connection (PostgreSQL or SQLite)
+# Example: postgresql://postgres:postgres@localhost:5432/quantbot
+database_url: "sqlite:///quantbot.db"
+
+# Multi-Account / Multi-Broker Support
+accounts:
+  - id: "tokocrypto_demo"
+    broker: "tokocrypto"
+    mode: "demo"
+    api_key: ""
+    api_secret: ""
+  - id: "tokocrypto_live"
+    broker: "tokocrypto"
+    mode: "live"
+    api_key: ""
+    api_secret: ""
+
+# Multi-Symbol Support
+symbols:
+  - "BTC/USDT"
+  - "ETH/USDT"
+
+# Multi-Strategy Configurations
+strategies:
+  - name: "EMA_RSI"
+    enabled: true
+    symbols:
+      - "BTC/USDT"
+      - "ETH/USDT"
+    parameters:
+      ema_fast: 9
+      ema_slow: 21
+      rsi_period: 14
+      rsi_oversold: 35.0
+      rsi_overbought: 65.0

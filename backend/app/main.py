@@ -2,6 +2,8 @@ import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router, bot_instance
+from app.core.logging_setup import setup_logging
+from loguru import logger
 
 app = FastAPI(title="Crypto Trading Bot API", version="1.0.0")
 
@@ -48,21 +50,22 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 async def background_trading_loop():
-    """Loop background yang mengevaluasi sinyal & broadcast data realtime tiap 2 detik"""
+    """Loop background yang mengevaluasi sinyal & broadcast data realtime tiap 2 detik secara non-blocking"""
     while True:
         try:
-            tick_res = bot_instance.evaluate_market_tick()
-            stats = bot_instance.get_full_stats()
+            tick_res = await asyncio.to_thread(bot_instance.evaluate_market_tick)
+            stats = await asyncio.to_thread(bot_instance.get_full_stats)
             payload = {
                 "tick": tick_res,
                 "stats": stats
             }
             await manager.broadcast(payload)
         except Exception as e:
-            print(f"[TradingLoop Error] {e}")
+            logger.error(f"[TradingLoop Error] {e}")
         await asyncio.sleep(2)
 
 @app.on_event("startup")
 async def startup_event():
+    setup_logging()
     asyncio.create_task(background_trading_loop())
     asyncio.create_task(bot_instance.telegram_service.poll_updates(bot_instance))
