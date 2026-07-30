@@ -94,6 +94,7 @@ class TradingBotStrategy:
         self.log_messages: List[str] = []
         self.daily_starting_balance = 10000.0
         self.max_daily_drawdown_triggered = False
+        self.last_reset_date = datetime.now().date()
         
         # Unused legacy handle, kept for schema properties compatibility
         self.live_active_position: Optional[Dict] = None
@@ -198,10 +199,32 @@ class TradingBotStrategy:
         with SessionLocal() as db:
             trade_repo = TradeRepository(db)
             
+            # Reset daily starting balance on a new calendar day
+            today = datetime.now().date()
+            if today != self.last_reset_date:
+                self.last_reset_date = today
+                if mode == "DEMO":
+                    self.daily_starting_balance = 10000.0
+                else:
+                    self.daily_starting_balance = 0.0
+                self.max_daily_drawdown_triggered = False
+                logger.info(f"📆 New trading day detected ({today}). Resetting daily starting balance.")
+            
             # Setup active broker instance
             if mode == "DEMO":
+                if self.daily_starting_balance != 10000.0:
+                    self.daily_starting_balance = 10000.0
                 broker = PaperBroker(db, initial_balance=self.daily_starting_balance, ccxt_underlying=self.ccxt_service)
             else:
+                if self.daily_starting_balance == 10000.0 or self.daily_starting_balance <= 0.0:
+                    try:
+                        broker_bal = self.ccxt_service.fetch_balance()
+                        live_bal = float(broker_bal.get("USDT", {}).get("free", 0.0))
+                        if live_bal > 0.0:
+                            self.daily_starting_balance = live_bal
+                            logger.info(f"💼 Live daily starting balance initialized to actual exchange balance: {self.daily_starting_balance:.2f} USDT")
+                    except Exception as e:
+                        logger.error(f"Failed to fetch live balance for starting balance initialization: {e}")
                 broker = self.ccxt_service
                 
             portfolio = PortfolioManager(db, broker, mode=mode, initial_balance=self.daily_starting_balance)
