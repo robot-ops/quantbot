@@ -88,34 +88,10 @@ class BotConfig(BaseModel):
             return False
 
 def load_config() -> BotConfig:
-    """Loads configuration by merging config.yaml, legacy settings.json, and environment variables."""
+    """Loads configuration by merging environment variables, config.yaml, and legacy settings.json."""
     merged_data: Dict[str, Any] = {}
 
-    # 1. Load from config.yaml if it exists
-    if os.path.exists(YAML_FILE):
-        try:
-            with open(YAML_FILE, "r", encoding="utf-8") as f:
-                yaml_data = yaml.safe_load(f)
-                if isinstance(yaml_data, dict):
-                    merged_data.update(yaml_data)
-                    logger.info(f"Loaded config from YAML: {YAML_FILE}")
-        except Exception as e:
-            logger.error(f"Failed to parse config.yaml: {e}")
-
-    # 2. Fallback to settings.json if YAML load didn't provide everything (or as secondary merge)
-    if os.path.exists(SETTINGS_FILE):
-        try:
-            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-                json_data = json.load(f)
-                if isinstance(json_data, dict):
-                    for k, v in json_data.items():
-                        if k not in merged_data or not merged_data[k]:
-                            merged_data[k] = v
-                    logger.info(f"Merged legacy config from JSON: {SETTINGS_FILE}")
-        except Exception as e:
-            logger.error(f"Failed to parse settings.json: {e}")
-
-    # 3. Override/Fallback with Environment Variables (with prefix or match case)
+    # 1. Load from Environment Variables first as the base defaults
     env_mappings = {
         "TRADING_MODE": "trading_mode",
         "SYMBOL": "symbol",
@@ -141,11 +117,14 @@ def load_config() -> BotConfig:
         "BREAK_EVEN_PCT": "break_even_pct",
         "USE_PARTIAL_CLOSE": "use_partial_close",
         "PARTIAL_CLOSE_PCT": "partial_close_pct",
+        "USE_ADX_FILTER": "use_adx_filter",
+        "ADX_THRESHOLD": "adx_threshold",
+        "ADX_PERIOD": "adx_period",
     }
     
     for env_key, config_key in env_mappings.items():
         val = os.getenv(env_key)
-        if val is not None:
+        if val is not None and val.strip() != "":
             # Convert type based on defaults
             default_val = getattr(BotConfig, config_key, None)
             if isinstance(default_val, bool):
@@ -156,6 +135,32 @@ def load_config() -> BotConfig:
                 merged_data[config_key] = float(val)
             else:
                 merged_data[config_key] = val
+
+    # 2. Merge values from legacy settings.json (user configuration)
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                json_data = json.load(f)
+                if isinstance(json_data, dict):
+                    for k, v in json_data.items():
+                        if v is not None:
+                            merged_data[k] = v
+                    logger.info(f"Merged legacy config from JSON: {SETTINGS_FILE}")
+        except Exception as e:
+            logger.error(f"Failed to parse settings.json: {e}")
+
+    # 3. Merge values from config.yaml (takes ultimate priority)
+    if os.path.exists(YAML_FILE):
+        try:
+            with open(YAML_FILE, "r", encoding="utf-8") as f:
+                yaml_data = yaml.safe_load(f)
+                if isinstance(yaml_data, dict):
+                    for k, v in yaml_data.items():
+                        if v is not None:
+                            merged_data[k] = v
+                    logger.info(f"Loaded config from YAML: {YAML_FILE}")
+        except Exception as e:
+            logger.error(f"Failed to parse config.yaml: {e}")
 
     # Build Pydantic model
     return BotConfig(**merged_data)
