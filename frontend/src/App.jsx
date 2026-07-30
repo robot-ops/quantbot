@@ -10,7 +10,7 @@ import axios from 'axios';
 
 // Dynamic API Base & WebSocket URL (Auto switch between Localhost and Cloud Render)
 const DEFAULT_CLOUD_API = 'https://quantbot-i0ab.onrender.com';
-const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
 const API_BASE = import.meta.env.VITE_API_BASE || (isLocalhost ? 'http://localhost:8000' : DEFAULT_CLOUD_API);
 const WS_URL = import.meta.env.VITE_WS_URL || (isLocalhost ? 'ws://localhost:8000/ws' : DEFAULT_CLOUD_API.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws');

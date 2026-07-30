@@ -9,6 +9,7 @@ export default function SettingsModal({ config, onClose, onSave, API_BASE }) {
   const [showChatId, setShowChatId] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showApiSecret, setShowApiSecret] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const [formData, setFormData] = useState({
     symbol: config?.symbol || 'BTC/USDT',
@@ -29,30 +30,30 @@ export default function SettingsModal({ config, onClose, onSave, API_BASE }) {
     exchange_api_secret: config?.exchange_api_secret || ''
   });
 
-  // Automatically update form fields when config prop changes / loads
+  // Automatically initialize form fields only once when config prop becomes available
   useEffect(() => {
-    if (config) {
-      setFormData(prev => ({
-        ...prev,
-        symbol: config.symbol || prev.symbol,
-        timeframe: config.timeframe || prev.timeframe,
-        ema_fast: config.ema_fast ?? prev.ema_fast,
-        ema_slow: config.ema_slow ?? prev.ema_slow,
-        rsi_period: config.rsi_period ?? prev.rsi_period,
-        rsi_oversold: config.rsi_oversold ?? prev.rsi_oversold,
-        rsi_overbought: config.rsi_overbought ?? prev.rsi_overbought,
-        stop_loss_pct: config.stop_loss_pct ?? prev.stop_loss_pct,
-        take_profit_pct: config.take_profit_pct ?? prev.take_profit_pct,
-        risk_per_trade_pct: config.risk_per_trade_pct ?? prev.risk_per_trade_pct,
-        max_daily_drawdown_pct: config.max_daily_drawdown_pct ?? prev.max_daily_drawdown_pct,
-        telegram_bot_token: config.telegram_bot_token || prev.telegram_bot_token,
-        telegram_chat_id: config.telegram_chat_id || prev.telegram_chat_id,
-        exchange_id: config.exchange_id || prev.exchange_id,
-        exchange_api_key: config.exchange_api_key || prev.exchange_api_key,
-        exchange_api_secret: config.exchange_api_secret || prev.exchange_api_secret
-      }));
+    if (config && !isInitialized) {
+      setFormData({
+        symbol: config.symbol || 'BTC/USDT',
+        timeframe: config.timeframe || '15m',
+        ema_fast: config.ema_fast ?? 9,
+        ema_slow: config.ema_slow ?? 21,
+        rsi_period: config.rsi_period ?? 14,
+        rsi_oversold: config.rsi_oversold ?? 35.0,
+        rsi_overbought: config.rsi_overbought ?? 65.0,
+        stop_loss_pct: config.stop_loss_pct ?? 1.5,
+        take_profit_pct: config.take_profit_pct ?? 3.0,
+        risk_per_trade_pct: config.risk_per_trade_pct ?? 1.0,
+        max_daily_drawdown_pct: config.max_daily_drawdown_pct ?? 3.0,
+        telegram_bot_token: config.telegram_bot_token || '',
+        telegram_chat_id: config.telegram_chat_id || '',
+        exchange_id: config.exchange_id || 'tokocrypto',
+        exchange_api_key: config.exchange_api_key || '',
+        exchange_api_secret: config.exchange_api_secret || ''
+      });
+      setIsInitialized(true);
     }
-  }, [config]);
+  }, [config, isInitialized]);
 
   const [testStatus, setTestStatus] = useState(null);
   const [isTesting, setIsTesting] = useState(false);
