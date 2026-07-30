@@ -17,12 +17,17 @@ risk_per_trade_pct: 1.0
 max_daily_drawdown_pct: 3.0
 
 # Dynamic Risk Management Switches
-use_trailing_stop: false
+use_trailing_stop: true
 trail_pct: 1.0
-use_break_even: false
+use_break_even: true
 break_even_pct: 1.5
 use_partial_close: false
 partial_close_pct: 1.5
+
+# Trend Strength Filter (ADX)
+use_adx_filter: true
+adx_threshold: 20.0
+adx_period: 14
 
 # Telegram Credentials
 telegram_bot_token: ""
@@ -68,3 +73,6 @@ strategies:
       rsi_period: 14
       rsi_oversold: 35.0
       rsi_overbought: 65.0
+      use_adx_filter: true
+      adx_threshold: 20.0
+      adx_period: 14

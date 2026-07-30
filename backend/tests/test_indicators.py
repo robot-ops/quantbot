@@ -36,3 +36,16 @@ def test_calculate_atr():
     assert len(atr) == 5
     # TR = 10, so ATR should settle around 10
     assert atr.iloc[-1] > 0
+
+def test_calculate_adx():
+    # Trending price series (steady upward trend)
+    data = {
+        "high":  [100 + i for i in range(40)],
+        "low":   [98 + i for i in range(40)],
+        "close": [99 + i for i in range(40)]
+    }
+    df = pd.DataFrame(data)
+    
+    adx = TechnicalIndicators.calculate_adx(df, period=10)
+    assert len(adx) == 40
+    assert adx.iloc[-1] > 20.0

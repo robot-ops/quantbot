@@ -21,7 +21,10 @@ class EMARSIStrategy(BaseStrategy):
             "take_profit_pct": float(parameters.get("take_profit_pct", 3.0)),
             "use_atr": bool(parameters.get("use_atr", False)),
             "atr_multiplier_sl": float(parameters.get("atr_multiplier_sl", 2.0)),
-            "atr_multiplier_tp": float(parameters.get("atr_multiplier_tp", 4.0))
+            "atr_multiplier_tp": float(parameters.get("atr_multiplier_tp", 4.0)),
+            "use_adx_filter": bool(parameters.get("use_adx_filter", True)),
+            "adx_threshold": float(parameters.get("adx_threshold", 20.0)),
+            "adx_period": int(parameters.get("adx_period", 14))
         }
         logger.info(f"EMARSIStrategy initialized with params: {self.params}")
 
@@ -57,12 +60,19 @@ class EMARSIStrategy(BaseStrategy):
         return "NEUTRAL"
 
     def confirm_signal(self, df: pd.DataFrame, signal: str) -> bool:
-        """Confirms the signal using RSI filters."""
+        """Confirms the signal using RSI and ADX trend strength filters."""
         if len(df) == 0:
             return False
 
         last_row = df.iloc[-1]
         rsi = float(last_row["rsi"]) if not pd.isna(last_row["rsi"]) else 50.0
+
+        # ADX Trend Strength Filter Check
+        if self.params.get("use_adx_filter", True) and "adx" in df.columns:
+            adx = float(last_row["adx"]) if not pd.isna(last_row["adx"]) else 20.0
+            if adx < self.params.get("adx_threshold", 20.0):
+                logger.info(f"Signal {signal} REJECTED: ADX Trend Strength ({adx:.2f}) is below threshold ({self.params.get('adx_threshold')})")
+                return False
 
         if signal == "BUY":
             # For buy, confirm only if not overbought

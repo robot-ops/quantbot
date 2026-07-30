@@ -43,12 +43,17 @@ class BotConfig(BaseModel):
     max_daily_drawdown_pct: float = 3.0
 
     # Risk Control Switches
-    use_trailing_stop: bool = False
+    use_trailing_stop: bool = True
     trail_pct: float = 1.0
-    use_break_even: bool = False
+    use_break_even: bool = True
     break_even_pct: float = 1.5
     use_partial_close: bool = False
     partial_close_pct: float = 1.5
+
+    # Trend Strength Filter (ADX)
+    use_adx_filter: bool = True
+    adx_threshold: float = 20.0
+    adx_period: int = 14
 
     # Telegram Credentials
     telegram_bot_token: str = ""
