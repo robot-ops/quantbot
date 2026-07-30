@@ -57,6 +57,8 @@ class TradingBotStrategy:
         # 1. Initialize Database Tables
         init_db()
 
+        self.last_config_mtime = 0.0
+
         # 2. Assign configuration
         self.config = config
         self.is_running = False
@@ -81,6 +83,9 @@ class TradingBotStrategy:
 
         # Paper Engine compatibility wrapper
         self.paper_engine = PaperEngineCompat(self)
+        
+        # Populate initial config mtime
+        self._check_and_reload_config()
 
         # Legacy diagnostic fields
         self.latest_df = None
@@ -104,6 +109,32 @@ class TradingBotStrategy:
             
         logger.info(message)
 
+    def _check_and_reload_config(self):
+        """Checks if config.yaml was modified on disk, and if so, hot-reloads it."""
+        import os
+        from app.core.config import YAML_FILE, load_config
+        if not os.path.exists(YAML_FILE):
+            return
+        try:
+            mtime = os.path.getmtime(YAML_FILE)
+            if mtime > self.last_config_mtime:
+                self.last_config_mtime = mtime
+                # Load configuration and re-initialize services
+                self.config = load_config()
+                self.strategy.initialize(self.config.dict())
+                self.telegram_service.update_credentials(
+                    self.config.telegram_bot_token,
+                    self.config.telegram_chat_id
+                )
+                self.ccxt_service._init_exchange(
+                    self.config.exchange_id,
+                    self.config.exchange_api_key,
+                    self.config.exchange_api_secret
+                )
+                logger.info("🤖 Config hot-reload triggered: updated in-memory values from config.yaml")
+        except Exception as e:
+            logger.error(f"Error reloading config from disk: {e}")
+
     def update_config(self, new_settings: Dict[str, Any]):
         """Updates Pydantic configuration model and updates sub-services."""
         for key, value in new_settings.items():
@@ -114,6 +145,10 @@ class TradingBotStrategy:
                 setattr(self.config, key, value)
         
         self.config.save()
+        # Force immediately update last_config_mtime to prevent redundant reload
+        from app.core.config import YAML_FILE
+        if os.path.exists(YAML_FILE):
+            self.last_config_mtime = os.path.getmtime(YAML_FILE)
 
         # Update Telegram credentials
         self.telegram_service.update_credentials(
@@ -137,6 +172,7 @@ class TradingBotStrategy:
         """Runs a single market evaluation cycle. Pulls market data, checks SL/TP thresholds,
         applies indicator rules, calculates position size, and executes entries/exits.
         """
+        self._check_and_reload_config()
         start_time = time.perf_counter()
         mode = self.config.trading_mode.upper()
 
@@ -381,6 +417,7 @@ class TradingBotStrategy:
 
     def get_full_stats(self) -> Dict[str, Any]:
         """Provides full statistics summary to UI WebSocket client."""
+        self._check_and_reload_config()
         mode = self.config.trading_mode.upper()
         
         with SessionLocal() as db:
