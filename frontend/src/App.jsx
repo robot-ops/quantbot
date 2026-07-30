@@ -8,12 +8,20 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Terminal } from 'lucide-react';
 import axios from 'axios';
 
-// Dynamic API Base & WebSocket URL (Auto switch between Localhost and Cloud Render)
-const DEFAULT_CLOUD_API = 'https://quantbot-i0ab.onrender.com';
+// Dynamic API Base & WebSocket URL (Auto switch between Localhost and current Domain)
 const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
-const API_BASE = import.meta.env.VITE_API_BASE || (isLocalhost ? 'http://localhost:8000' : DEFAULT_CLOUD_API);
-const WS_URL = import.meta.env.VITE_WS_URL || (isLocalhost ? 'ws://localhost:8000/ws' : DEFAULT_CLOUD_API.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws');
+const API_BASE = import.meta.env.VITE_API_BASE || (
+  isLocalhost 
+    ? 'http://localhost:8000' 
+    : `${window.location.protocol}//${window.location.host}`
+);
+
+const WS_URL = import.meta.env.VITE_WS_URL || (
+  isLocalhost 
+    ? 'ws://localhost:8000/ws' 
+    : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`
+);
 
 export default function App() {
   const [stats, setStats] = useState(null);
