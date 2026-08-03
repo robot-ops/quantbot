@@ -349,6 +349,17 @@ class TradingBotStrategy:
                             pnl_pct=pnl_pct,
                             reason=close_reason
                         )
+                    else:
+                        error_msg = order_res.get("message", "Gagal mengeksekusi order jual dari exchange")
+                        self.log(f"⚠️ GAGAL CLOSE ORDER [{mode}] @ ${current_price:,.2f} | Alasan: {error_msg}")
+                        self.telegram_service.send_trade_failure_alert(
+                            mode=mode.lower(),
+                            symbol=active_pos.symbol,
+                            side="SELL",
+                            price=current_price,
+                            amount=active_pos.amount,
+                            reason=error_msg
+                        )
 
             # 3. Check Risk Drawdown Limits
             stats = portfolio.get_stats(current_price)
@@ -410,6 +421,28 @@ class TradingBotStrategy:
                                 sl_price=sl_price,
                                 tp_price=tp_price
                             )
+                        else:
+                            error_msg = order_res.get("message", "Gagal mengeksekusi order dari exchange")
+                            self.log(f"⚠️ GAGAL BUY ORDER [{mode}] @ ${current_price:,.2f} | Alasan: {error_msg}")
+                            self.telegram_service.send_trade_failure_alert(
+                                mode=mode.lower(),
+                                symbol=self.config.symbol,
+                                side="BUY",
+                                price=current_price,
+                                amount=amount,
+                                reason=error_msg
+                            )
+                    else:
+                        error_msg = f"Perhitungan jumlah order bernilai 0. Saldo USDT saat ini: ${stats['balance']:.2f} USDT"
+                        self.log(f"⚠️ GAGAL BUY ORDER [{mode}] | {error_msg}")
+                        self.telegram_service.send_trade_failure_alert(
+                            mode=mode.lower(),
+                            symbol=self.config.symbol,
+                            side="BUY",
+                            price=current_price,
+                            amount=0.0,
+                            reason=error_msg
+                        )
 
             # Record performance logs every tick
             portfolio.record_performance_snapshot(current_price)

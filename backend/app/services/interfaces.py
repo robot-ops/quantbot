@@ -86,3 +86,8 @@ class NotificationService(ABC):
     def send_risk_alert(self, title: str, description: str, mode: str = "demo"):
         """Send a high-priority risk violation warning."""
         pass
+
+    @abstractmethod
+    def send_trade_failure_alert(self, mode: str, symbol: str, side: str, price: float, amount: float, reason: str):
+        """Send a formatted notification when a trade execution fails."""
+        pass

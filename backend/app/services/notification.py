@@ -430,14 +430,15 @@ Selamat datang di menu kendali jarak jauh QuantBot! Gunakan tombol cepat di bawa
 
     def send_trade_open_alert(self, mode: str, symbol: str, side: str, price: float, amount: float, sl_price: float, tp_price: float):
         badge = "🟡 <b>[DEMO PAPER TRADING]</b>" if mode == "demo" else "🔴 <b>[LIVE REAL TRADING]</b>"
-        emoji = "🟢 🚀 BUY ORDER" if side == "BUY" else "🔴 📉 SELL ORDER"
+        emoji = "🟢 🚀 BUY ORDER EXECUTED" if side == "BUY" else "🔴 📉 SELL ORDER EXECUTED"
+        amount_fmt = f"{amount:.8f}".rstrip('0').rstrip('.') if amount < 0.01 else f"{amount:.4f}"
         
         msg = f"""{badge}
 {emoji}
 
 <b>Symbol:</b> {symbol}
 <b>Entry Price:</b> ${price:,.2f} USDT
-<b>Amount:</b> {amount:.4f}
+<b>Amount:</b> {amount_fmt}
 <b>Total Cost:</b> ${(price * amount):,.2f} USDT
 
 <b>Stop Loss (SL):</b> ${sl_price:,.2f} USDT
@@ -484,6 +485,33 @@ Selamat datang di menu kendali jarak jauh QuantBot! Gunakan tombol cepat di bawa
 
 <b>Event:</b> {title}
 <b>Detail:</b> {description}"""
+
+        url = f"https://api.telegram.org/bot{self.token}/sendMessage"
+        payload = {
+            "chat_id": self.chat_id, 
+            "text": msg, 
+            "parse_mode": "HTML",
+            "reply_markup": self.get_default_keyboard()
+        }
+        try: requests.post(url, json=payload, timeout=5)
+        except Exception: pass
+
+    def send_trade_failure_alert(self, mode: str, symbol: str, side: str, price: float, amount: float, reason: str):
+        badge = "🟡 <b>[DEMO PAPER TRADING]</b>" if mode == "demo" else "🔴 <b>[LIVE REAL TRADING]</b>"
+        amount_fmt = f"{amount:.8f}".rstrip('0').rstrip('.') if amount < 0.01 else f"{amount:.4f}"
+        
+        msg = f"""{badge}
+⚠️ <b>TRANSAKSI GAGAL DISEKUSI</b>
+
+<b>Symbol:</b> {symbol} ({side})
+<b>Harga Ticker:</b> ${price:,.2f} USDT
+<b>Jumlah Order:</b> {amount_fmt}
+<b>Estimasi Cost:</b> ${(price * amount):,.2f} USDT
+
+❌ <b>Alasan Gagal:</b>
+<code>{reason}</code>
+
+💡 <i>Periksa API Key, izin Spot Trading, atau saldo USDT di Tokocrypto Anda.</i>"""
 
         url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         payload = {
