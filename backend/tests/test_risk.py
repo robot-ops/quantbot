@@ -27,6 +27,24 @@ def test_calculate_position_size():
     )
     assert size_capped == 250.0
 
+def test_micro_balance_btc():
+    rm = RiskManager()
+    
+    # Micro-balance test: $11 USDT balance, BTC at $65,000.
+    # Should allocate ~95% of $11 ($10.45 USDT) to meet exchange $10 minimum.
+    # Amount = 10.45 / 65000 = 0.000160769 -> 6 decimals = 0.000161 BTC (> 0).
+    size_btc = rm.calculate_position_size(
+        current_price=65000.0,
+        balance=11.0,
+        risk_per_trade_pct=1.0,
+        stop_loss_pct=1.5,
+        max_allocation_pct=25.0,
+        min_order_value=10.0
+    )
+    assert size_btc > 0.0
+    assert size_btc == 0.00016077
+    assert round(size_btc * 65000.0, 2) >= 10.0
+
 def test_check_daily_drawdown():
     rm = RiskManager()
     

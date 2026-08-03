@@ -14,9 +14,11 @@ class RiskManager:
         balance: float, 
         risk_per_trade_pct: float, 
         stop_loss_pct: float,
-        max_allocation_pct: float = 25.0
+        max_allocation_pct: float = 25.0,
+        min_order_value: float = 1.0
     ) -> float:
         """Calculates position size dynamically based on equity risk and maximum allocation.
+        Supports micro-balances and precision for BTC and other crypto assets.
 
         Args:
             current_price (float): The current spot price of the asset.
@@ -24,9 +26,10 @@ class RiskManager:
             risk_per_trade_pct (float): Percentage of equity to risk per trade.
             stop_loss_pct (float): The stop loss distance in percentage.
             max_allocation_pct (float): Maximum portion of equity to allocate to the position. Defaults to 25.0%.
+            min_order_value (float): Minimum order value in USDT. Defaults to 1.0.
 
         Returns:
-            float: Amount of asset to trade, rounded to 4 decimals.
+            float: Amount of asset to trade.
         """
         if current_price <= 0 or balance <= 0:
             return 0.0
@@ -41,8 +44,23 @@ class RiskManager:
         max_cost = balance * (max_allocation_pct / 100.0)
         actual_cost = min(position_value, max_cost)
         
+        # Micro-balance adjustment: If balance is sufficient to cover min_order_value (e.g., $10 USDT)
+        # but the standard risk allocation yields less than min_order_value, adjust actual_cost.
+        if balance >= min_order_value and actual_cost < min_order_value:
+            micro_cost = balance * 0.95  # Allocate up to 95% of balance (leaving 5% for fees/buffer)
+            if micro_cost >= min_order_value:
+                actual_cost = micro_cost
+                logger.info(f"Micro-balance detected (${balance:.2f} USDT). Adjusted order cost to ${actual_cost:.2f} USDT to meet minimum order value (${min_order_value:.2f} USDT).")
+
         amount = actual_cost / current_price
-        return round(amount, 4)
+        
+        # Dynamic precision rounding up to 8 decimal places (Satoshi level for BTC)
+        if amount < 0.01:
+            return round(amount, 8)
+        elif amount < 1.0:
+            return round(amount, 6)
+        else:
+            return round(amount, 4)
 
     def check_daily_drawdown(
         self, 
