@@ -20,12 +20,21 @@ class CCXTBroker(BaseBroker):
             exchange_class = getattr(ccxt, exchange_id, ccxt.binance)
             config = {
                 "enableRateLimit": True,
-                "timeout": 10000,
+                "timeout": 15000,
+                "options": {
+                    "adjustForTimeDifference": True,
+                    "recvWindow": 10000,
+                }
             }
             if api_key and api_secret:
                 config["apiKey"] = api_key
                 config["secret"] = api_secret
             self.exchange = exchange_class(config)
+            if api_key and api_secret:
+                try:
+                    self.exchange.load_markets()
+                except Exception as lm_err:
+                    logger.warning(f"Could not load markets for {exchange_id} during init: {lm_err}")
             logger.info(f"CCXT Exchange {exchange_id.upper()} initialized.")
         except Exception as e:
             logger.error(f"Error initializing exchange {exchange_id}: {e}")
@@ -86,19 +95,47 @@ class CCXTBroker(BaseBroker):
         return df
 
     def execute_order(self, symbol: str, side: str, amount: float, price: Optional[float] = None) -> Dict[str, Any]:
-        if not self.exchange or not self.exchange.apiKey:
+        if not self.exchange or not self.exchange.apiKey or not self.exchange.secret:
             return {"status": "error", "message": "Live Trading API Key & Secret belum dikonfigurasi"}
         
         try:
+            if hasattr(self.exchange, "markets") and not self.exchange.markets:
+                try:
+                    self.exchange.load_markets()
+                except Exception as lm_err:
+                    logger.warning(f"Warning loading markets before order: {lm_err}")
+
+            formatted_amount = amount
+            if hasattr(self.exchange, "amount_to_precision"):
+                try:
+                    formatted_amount = float(self.exchange.amount_to_precision(symbol, amount))
+                except Exception as prec_err:
+                    logger.warning(f"Could not apply amount_to_precision: {prec_err}")
+
+            if formatted_amount <= 0:
+                return {"status": "error", "message": f"Jumlah order ({amount}) setelah presisi exchange bernilai 0"}
+
             order_type = "market" if price is None else "limit"
+            exec_price = price
+            if order_type == "market" and side.lower() == "buy":
+                exec_price = self.fetch_ticker(symbol)
+
+            if exec_price and hasattr(self.exchange, "price_to_precision"):
+                try:
+                    exec_price = float(self.exchange.price_to_precision(symbol, exec_price))
+                except Exception:
+                    pass
+
+            target_price = exec_price if (order_type == "limit" or (order_type == "market" and side.lower() == "buy")) else None
+
             order = self.exchange.create_order(
                 symbol=symbol,
                 type=order_type,
                 side=side.lower(),
-                amount=amount,
-                price=price
+                amount=formatted_amount,
+                price=target_price
             )
-            logger.bind(type="trade").info(f"Executed live order on {self.exchange_id}: {side.upper()} {amount} {symbol}")
+            logger.bind(type="trade").info(f"Executed live order on {self.exchange_id}: {side.upper()} {formatted_amount} {symbol}")
             return {"status": "success", "order": order}
         except Exception as e:
             logger.error(f"CCXT execution failed: {e}")

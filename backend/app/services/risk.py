@@ -15,7 +15,7 @@ class RiskManager:
         risk_per_trade_pct: float, 
         stop_loss_pct: float,
         max_allocation_pct: float = 25.0,
-        min_order_value: float = 1.0
+        min_order_value: float = 10.0
     ) -> float:
         """Calculates position size dynamically based on equity risk and maximum allocation.
         Supports micro-balances and precision for BTC and other crypto assets.
@@ -26,7 +26,7 @@ class RiskManager:
             risk_per_trade_pct (float): Percentage of equity to risk per trade.
             stop_loss_pct (float): The stop loss distance in percentage.
             max_allocation_pct (float): Maximum portion of equity to allocate to the position. Defaults to 25.0%.
-            min_order_value (float): Minimum order value in USDT. Defaults to 1.0.
+            min_order_value (float): Minimum order value in USDT. Defaults to 10.0.
 
         Returns:
             float: Amount of asset to trade.

@@ -390,7 +390,8 @@ class TradingBotStrategy:
                         current_price=current_price,
                         balance=stats["balance"],
                         risk_per_trade_pct=self.config.risk_per_trade_pct,
-                        stop_loss_pct=self.config.stop_loss_pct
+                        stop_loss_pct=self.config.stop_loss_pct,
+                        min_order_value=10.0
                     )
                     
                     if amount > 0:
